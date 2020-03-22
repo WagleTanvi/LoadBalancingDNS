@@ -6,4 +6,5 @@ Plan:
 3. Connect ls to both ts servers - NICK
 4. Send query from client to ls server - NICK
 5. Non-blocking handle of ls server data from the ts servers and send back to client- TANVI
-6. Recieve from ls server and write to file - NICK 
+6. Recieve from ls server and write to file - NICK
+7. README - NICK/TANVI 
