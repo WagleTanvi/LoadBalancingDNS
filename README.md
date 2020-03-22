@@ -1,9 +1,8 @@
 # LoadBalancingDNS
 
-1. Please write down the full names and netids of all your team members.
-2. Briefly discuss how you implemented the LS functionality of tracking which TS responded to the
-query and timing out if neither TS responded.
-3. Are there known issues or functions that aren't working currently in your attached code? If so,
-explain.
-4. What problems did you face developing code for this project?
-5. What did you learn by working on this project?
+1. Copy over read file code for client, and both servers from PROJ1 - TANVI 
+2. Connect client to ls server - NICK
+3. Connect ls to both ts servers - NICK
+4. Send query from client to ls server - NICK
+5. Non-blocking handle of ls server data from the ts servers and send back to client- TANVI
+6. Recieve from ls server and write to file - NICK 
