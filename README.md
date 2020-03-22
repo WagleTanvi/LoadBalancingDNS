@@ -1,5 +1,6 @@
 # LoadBalancingDNS
 
+Plan:
 1. Copy over read file code for client, and both servers from PROJ1 - TANVI 
 2. Connect client to ls server - NICK
 3. Connect ls to both ts servers - NICK
