@@ -41,14 +41,16 @@ def tsConnect(tsHostName,tsPort ):
 
 parser = argparse.ArgumentParser()
 
+
+# IMPORTANT: Commented out all TS server connections
+
 # Default arg is set to string type=int overrides
 parser.add_argument("lsHostName", help="input host data")
 parser.add_argument("lsListenPort", type=int, help="input ls port number")
-parser.add_argument("tsListenPort", type=int, help="input ts port number")
+
 args = parser.parse_args()
 print("[C]: host file name: " + args.lsHostName)
 print("[C]: ls socket: " + str(args.lsListenPort))
-print("[C]: ts socket: " + str(args.tsListenPort))
 
 #connect to LS server
 lsSocket = lsConnect(args.lsListenPort, args.lsHostName)
@@ -59,41 +61,29 @@ garbage_content =  str("{:<200}".format(garbage_content))
 lsSocket.send(garbage_content.encode('utf-8'))
 LSresponse = lsSocket.recv(200).decode('utf-8')
 print("[C]: Response received::  "+LSresponse)
-tsHost_arr = LSresponse.split("-")
-tsHostName = tsHost_arr[0].strip()
-if tsHostName == "localhost":
-    tsHostName = args.lsHostName
 
-# connect to TS server
-tsSocket = tsConnect(tsHostName, args.tsListenPort)
-
-address_file = open("PROJI-HNS.txt", "r")
-output_file = open("RESOLVED.txt", "w")
-
-
-fileInfo = ""
-for line in address_file:
-    line =  str("{:<200}".format(line))
-    print("[C]: Response sent::  "+line)
-    lsSocket.send(line.encode('utf-8'))
-    LSresponse = lsSocket.recv(200).decode('utf-8')
-    print("[C]: Response recieved::  "+LSresponse)
-    if "NS" in LSresponse:
-        print("[C]: Sending to TS ...  ")
-        print("[C]: Response sent to TS::  "+line)
-        tsSocket.send(line.encode('utf-8'))
-        TSresponse = tsSocket.recv(200).decode('utf-8')
-        print("[C]: Response received from TS::  "+TSresponse)
-        fileInfo = fileInfo + TSresponse.strip() + "\n" 
-        # output_file.write(TSresponse.strip()+"\n")
-    else:
-        fileInfo = fileInfo + LSresponse.strip() + "\n"
-        # output_file.write(LSresponse.strip()+"\n")
-fileInfo = fileInfo[:-1]
-output_file.write(fileInfo)
+# fileInfo = ""
+# for line in address_file:
+#     line =  str("{:<200}".format(line))
+#     print("[C]: Response sent::  "+line)
+#     lsSocket.send(line.encode('utf-8'))
+#     LSresponse = lsSocket.recv(200).decode('utf-8')
+#     print("[C]: Response recieved::  "+LSresponse)
+#     if "NS" in LSresponse:
+#         print("[C]: Sending to TS ...  ")
+#         print("[C]: Response sent to TS::  "+line)
+#         tsSocket.send(line.encode('utf-8'))
+#         TSresponse = tsSocket.recv(200).decode('utf-8')
+#         print("[C]: Response received from TS::  "+TSresponse)
+#         fileInfo = fileInfo + TSresponse.strip() + "\n" 
+#         output_file.write(TSresponse.strip()+"\n")
+#     else:
+#         fileInfo = fileInfo + LSresponse.strip() + "\n"
+#         output_file.write(LSresponse.strip()+"\n")
+# fileInfo = fileInfo[:-1]
+# output_file.write(fileInfo)
 
 lsSocket.send("DONE".encode('utf-8'))
 lsSocket.close()
-tsSocket.send("DONE".encode('utf-8'))
-tsSocket.close()
+
 exit()

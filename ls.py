@@ -42,16 +42,22 @@ def clientConnect(port):
     print("[LS]: Server IP address is  " + localhost_ip)
     csockid,addr=ss.accept()
     print ("[LS]: Got a connection request from a client at " + addr[0] + " " + str(addr[1]))
+    csockid.send("hello from ls")
+    request = csockid.recv(200).decode('utf-8');
+    print("[LS]: Response from client: " + request)
+    request = csockid.recv(200).decode('utf-8');
+    print("[LS]: Response from client: " + request)
 
-    while 1:
-        request = csockid.recv(200).decode('utf-8')
-        print("[LS]: Message received:: " + request)
-        if request == "DONE": 
-            break
-        response = find_ip(request.strip())
-        response =  "{:<200}".format(response)
-        print("[LS]: Response Sent:: " + response)
-        csockid.send(response.encode('utf-8'))
+    # TODO: uncomment after initial setup
+    # while 1:
+    #     request = csockid.recv(200).decode('utf-8')
+    #     print("[LS]: Message received:: " + request)
+    #     if request == "DONE": 
+    #         break
+    #     response = find_ip(request.strip())
+    #     response =  "{:<200}".format(response)
+    #     print("[LS]: Response Sent:: " + response)
+    #     csockid.send(response.encode('utf-8'))
 
     ss.close()
     exit()
@@ -62,5 +68,5 @@ parser = argparse.ArgumentParser()
 parser.add_argument("lsListenPort", type=int, help="input a port number")
 args = parser.parse_args()
 print("[LS]: Listening on port " + str(args.lsListenPort) + "...")
-set_up_dns_table()
+# set_up_dns_table()
 clientConnect(args.lsListenPort)
