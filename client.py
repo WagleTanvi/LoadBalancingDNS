@@ -1,6 +1,5 @@
 import socket as csock
 import argparse
-import time
 
 DOMAIN_NAMES = []
 
@@ -26,21 +25,12 @@ def lsConnect(lsPort, lsHostName):
 
     return cs
 
-def tsConnect(tsHostName,tsPort ):
-    # Establishing connection with TS
-    # Commented out to test code between client and RS only
-    # TODO: if condition here if RServer returns "TSHostName - NS"
-    try:
-        tcs = csock.socket(csock.AF_INET, csock.SOCK_STREAM)
-        print("[C]: TS Client Socket created")
-    except csock.error as err:
-        print('{} \n'.format("socket open error ",err))
-    addr = tsHostName
-    tcs.connect((addr, tsPort))
-    return tcs
+
+
+
+
 
 parser = argparse.ArgumentParser()
-
 
 # IMPORTANT: Commented out all TS server connections
 
