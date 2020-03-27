@@ -33,49 +33,67 @@ def tsConnect(tsHostName,tsPort):
     # Commented out to test code between client and RS only
     # TODO: if condition here if RServer returns "TSHostName - NS"
     try:
-        tcs = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        print("[C]: TS Client Socket created")
+        ts = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        print("[LS]: TS Client Socket created")
     except socket.error as err:
         print('{} \n'.format("socket open error ",err))
     tsaddr = tsHostName
-    tcs.connect((tsaddr, tsPort))
-    return tcs
+    ts.connect((tsaddr, tsPort))
+    return ts
 
 # TODO: ts parameters must be added
-def clientConnect(port):
+def clientConnect(lsListenPort, ts1Hostname, ts1ListenPort, ts2Hostname, ts2ListenPort):
     try:
-        ss=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        ssls=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print("[LS]: Server socket created")
     except socket.error as err:
         print('{} \n'.format("socket open error ",err))
 
-    server_binding=('',port)
-    ss.bind(server_binding)
-    ss.listen(1)
+    server_binding=('',lsListenPort)
+    ssls.bind(server_binding)
+    ssls.listen(1)
     host=socket.gethostname()
     print("[LS]: Server host name is: " + host)
     localhost_ip=(socket.gethostbyname(host))
     print("[LS]: Server IP address is  " + localhost_ip)
-    csockid,addr=ss.accept()
+
+    print("\n")
+    csockid,addr=ssls.accept()
     print ("[LS]: Got a connection request from a client at " + addr[0] + " " + str(addr[1]))
-    csockid.send("hello from ls")
-    request = csockid.recv(200).decode('utf-8');
-    print("[LS]: Response from client: " + request)
-    request = csockid.recv(200).decode('utf-8');
-    print("[LS]: Response from client: " + request)
+    request = csockid.recv(200).decode('utf-8')
+    print("[LS]: Response Received from Client:: " + request)
+    print("[LS]: Sending to Client: \"Hello Client, this is LS\"")
+    csockid.send("Hello Client, this is LS")
+
+    print("\n")
 
     # LS then forwards the query to _both_ TS1 and TS2. However, at most one of TS1 and TS2 contain the IP address for this hostname.
     # Only when a TS server contains a mapping will it respond to LS; otherwise, that TS sends nothing back.
+    ts1Socket = tsConnect(ts1Hostname, ts1ListenPort)
+    ts1Request = ts1Socket.recv(200).decode('utf-8')
+    print("[LS]: Response Received from TS1:: " + request)
+    print("[LS]: Sending to TS1: \"Hello TS1, this is LS\"")
+    ts1Socket.send("Hello TS1, this is LS")
+    ts1Request = ts1Socket.recv(200).decode('utf-8')
+    print("[LS]: Response Received from TS1:: " + request)
 
-    
+    print("\n")
 
+    ts2Socket = tsConnect(ts2Hostname, ts2ListenPort)
+    ts2Request = ts2Socket.recv(200).decode('utf-8')
+    print("[LS]: Response Received from TS2:: " + request)
+    print("[LS]: Sending to TS2: \"Hello TS2, this is LS\"")
+    ts2Socket.send("Hello TS2, this is LS")
+    ts2Request = ts2Socket.recv(200).decode('utf-8')
+    print("[LS]: Response Received from TS2:: " + request)
 
     #if the LS does not receive a response from either TS within a time interval of 5 seconds (OK to wait slightly longer),
     #the LS must sendthe client the message: Hostname -Error:HOST NOT FOUND where the Hostname is the client-requested host name.
 
 
 
-    # TODO: uncomment after initial setup
+
+    # TODO: uncomment after initial setup might not need it in ls. only in ts
     # while 1:
     #     request = csockid.recv(200).decode('utf-8')
     #     print("[LS]: Message received:: " + request)
@@ -86,7 +104,11 @@ def clientConnect(port):
     #     print("[LS]: Response Sent:: " + response)
     #     csockid.send(response.encode('utf-8'))
 
-    ss.close()
+    print("\n")
+    print("[LS]: Sending to Client: \"Finished transmitting\"")
+    csockid.send("Finished Transmitting".decode('utf-8'))
+
+    ssls.close()
     exit()
 
 
@@ -96,7 +118,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("lsListenPort", type=int, help="input a port number")
 parser.add_argument("ts1Hostname", help="input ts1Hostname")
 parser.add_argument("ts1ListenPort", type=int, help="input ts1Hostname port number")
-parser.add_argument("ts2Hostname", help="input ts1Hostname")
+parser.add_argument("ts2Hostname", help="input ts2Hostname")
 parser.add_argument("ts2ListenPort", type=int, help="input ts2Hostname port number")
 args = parser.parse_args()
 print("[LS]: Listening on port " + str(args.lsListenPort) + "...")
@@ -105,4 +127,4 @@ print("[LS]: ts1ListenPort: " + str(args.ts1ListenPort))
 print("[LS]: ts2Hostname: " + args.ts2Hostname)
 print("[LS]: ts2ListenPort: " + str(args.ts2ListenPort))
 # set_up_dns_table()
-clientConnect(args.lsListenPort)
+clientConnect(args.lsListenPort, args.ts1Hostname, args.ts1ListenPort, args.ts2Hostname, args.ts2ListenPort)
