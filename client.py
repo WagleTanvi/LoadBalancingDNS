@@ -3,11 +3,6 @@ import argparse
 
 DOMAIN_NAMES = []
 
-def read_domain_names():
-    address_file = open("PROJI-HNS.txt", "r")
-    arr = address_file.readlines()
-    return arr
-
 def lsConnect(lsPort, lsHostName):
 
     # Establishing Connection with RS
@@ -25,63 +20,46 @@ def lsConnect(lsPort, lsHostName):
 
     return cs
 
+def sendQuery(lsSocket):
+    hns_file = open("PROJ2-HNS.txt")
+
+    print("[C]: Beginning transmission to LS. Sending queries...")
+    allLines = ""
+    for line in hns_file:
+        line = line.rstrip()
+        print(line)
+        allLines += line + " "
+    lsSocket.send(allLines)
+    hns_file.close()
 
 
-
-
-
-parser = argparse.ArgumentParser()
-
-# IMPORTANT: Commented out all TS server connections
 
 # Default arg is set to string type=int overrides
+parser = argparse.ArgumentParser()
 parser.add_argument("lsHostName", help="input host data")
 parser.add_argument("lsListenPort", type=int, help="input ls port number")
-
 args = parser.parse_args()
+
 print("[C]: host file name: " + args.lsHostName)
 print("[C]: ls socket: " + str(args.lsListenPort))
 
-
-print("\n")
+print("")
 #connect to LS server
 lsSocket = lsConnect(args.lsListenPort, args.lsHostName)
-
-# get host name for TS by sending invalid query 
-# garbage_content = "garbagevalue"
-# garbage_content =  str("{:<200}".format(garbage_content))
-# lsSocket.send(garbage_content.encode('utf-8'))
-
 print("[C]: Sending to LS: \"Hello LS, this is Client\"")
 lsSocket.send("Hello LS, this is Client".encode('utf-8'))
 LSresponse = lsSocket.recv(200).decode('utf-8')
 print("[C]: Response received from LS::  " + LSresponse)
 
+print("")
+sendQuery(lsSocket)
 
 
-# fileInfo = ""
-# for line in address_file:
-#     line =  str("{:<200}".format(line))
-#     print("[C]: Response sent::  "+line)
-#     lsSocket.send(line.encode('utf-8'))
-#     LSresponse = lsSocket.recv(200).decode('utf-8')
-#     print("[C]: Response recieved::  "+LSresponse)
-#     if "NS" in LSresponse:
-#         print("[C]: Sending to TS ...  ")
-#         print("[C]: Response sent to TS::  "+line)
-#         tsSocket.send(line.encode('utf-8'))
-#         TSresponse = tsSocket.recv(200).decode('utf-8')
-#         print("[C]: Response received from TS::  "+TSresponse)
-#         fileInfo = fileInfo + TSresponse.strip() + "\n" 
-#         output_file.write(TSresponse.strip()+"\n")
-#     else:
-#         fileInfo = fileInfo + LSresponse.strip() + "\n"
-#         output_file.write(LSresponse.strip()+"\n")
-# fileInfo = fileInfo[:-1]
-# output_file.write(fileInfo)
 
 LSresponse = lsSocket.recv(200).decode('utf-8')
 print("[C]: Response received:: " + LSresponse)
 lsSocket.close()
+
+
 
 exit()

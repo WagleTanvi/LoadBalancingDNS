@@ -38,7 +38,7 @@ def lsConnect(port):
     localhost_ip=(socket.gethostbyname(host))
     print("[TS1]: Server IP address is  " + localhost_ip)
 
-    print("\n")
+    print("")
     tssockid,addr=ss.accept()
     print ("[TS1]: Got a connection request from a LS at " + addr[0] + " " + str(addr[1]))
     print("[TS1]: Sending to LS: \"Hello LS, this is TS1\"")

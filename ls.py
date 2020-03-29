@@ -29,9 +29,6 @@ def find_ip(queried_host):
 
 # helper function. returns socket single connection with ts
 def tsConnect(tsHostName,tsPort):
-    # Establishing connection with TS
-    # Commented out to test code between client and RS only
-    # TODO: if condition here if RServer returns "TSHostName - NS"
     try:
         ts = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print("[LS]: TS Client Socket created")
@@ -40,6 +37,13 @@ def tsConnect(tsHostName,tsPort):
     tsaddr = tsHostName
     ts.connect((tsaddr, tsPort))
     return ts
+
+def getClientQuery(csockid):
+    print("[LS]: Receiving queries from Client...")
+    addresses = csockid.recv(4096).split(" ")
+    addresses.pop()
+    return addresses
+
 
 # TODO: ts parameters must be added
 def clientConnect(lsListenPort, ts1Hostname, ts1ListenPort, ts2Hostname, ts2ListenPort):
@@ -57,7 +61,7 @@ def clientConnect(lsListenPort, ts1Hostname, ts1ListenPort, ts2Hostname, ts2List
     localhost_ip=(socket.gethostbyname(host))
     print("[LS]: Server IP address is  " + localhost_ip)
 
-    print("\n")
+    print("")
     csockid,addr=ssls.accept()
     print ("[LS]: Got a connection request from a client at " + addr[0] + " " + str(addr[1]))
     request = csockid.recv(200).decode('utf-8')
@@ -65,8 +69,15 @@ def clientConnect(lsListenPort, ts1Hostname, ts1ListenPort, ts2Hostname, ts2List
     print("[LS]: Sending to Client: \"Hello Client, this is LS\"")
     csockid.send("Hello Client, this is LS")
 
-    print("\n")
+    print("")
 
+    clientRequests = getClientQuery(csockid)
+    print("[LS]: Transmission Complete. Looking for " + str(clientRequests) + " in TS1 and TS2...")
+
+    print("")
+
+
+    # TODO: Send hostnames to TS1 and TS2
     # LS then forwards the query to _both_ TS1 and TS2. However, at most one of TS1 and TS2 contain the IP address for this hostname.
     # Only when a TS server contains a mapping will it respond to LS; otherwise, that TS sends nothing back.
     ts1Socket = tsConnect(ts1Hostname, ts1ListenPort)
@@ -77,7 +88,7 @@ def clientConnect(lsListenPort, ts1Hostname, ts1ListenPort, ts2Hostname, ts2List
     ts1Request = ts1Socket.recv(200).decode('utf-8')
     print("[LS]: Response Received from TS1:: " + request)
 
-    print("\n")
+    print("")
 
     ts2Socket = tsConnect(ts2Hostname, ts2ListenPort)
     ts2Request = ts2Socket.recv(200).decode('utf-8')
@@ -104,7 +115,7 @@ def clientConnect(lsListenPort, ts1Hostname, ts1ListenPort, ts2Hostname, ts2List
     #     print("[LS]: Response Sent:: " + response)
     #     csockid.send(response.encode('utf-8'))
 
-    print("\n")
+    print("")
     print("[LS]: Sending to Client: \"Finished transmitting\"")
     csockid.send("Finished Transmitting".decode('utf-8'))
 
