@@ -27,6 +27,18 @@ def find_ip(queried_host):
             return row["hostname"] +" - "+ row["flag"]+ "\n"
 
 
+def getClientQuery(csockid):
+    print("[LS]: Receiving queries from Client...")
+    addresses = []
+    while(1):
+        hostname = csockid.recv(200).strip()
+        if(hostname == "DONE"):
+            break
+        addresses.append(hostname)
+        print("RECEIVED: " + hostname)
+
+    return addresses
+
 # helper function. returns socket single connection with ts
 def tsConnect(tsHostName,tsPort):
     try:
@@ -36,13 +48,6 @@ def tsConnect(tsHostName,tsPort):
         print('{} \n'.format("socket open error ",err))
     ts.connect((tsHostName, tsPort))
     return ts
-
-def getClientQuery(csockid):
-    print("[LS]: Receiving queries from Client...")
-    addresses = csockid.recv(4096).split(" ")
-    addresses.pop()
-    return addresses
-
 
 # TODO: ts parameters must be added
 def clientConnect(lsListenPort, ts1Hostname, ts1ListenPort, ts2Hostname, ts2ListenPort):
@@ -61,7 +66,7 @@ def clientConnect(lsListenPort, ts1Hostname, ts1ListenPort, ts2Hostname, ts2List
     print("[LS]: Server IP address is  " + localhost_ip)
 
     print("")
-    
+
     csockid,addr=ssls.accept()
     print ("[LS]: Got a connection request from a client at " + addr[0] + " " + str(addr[1]))
     clientRequests = getClientQuery(csockid)
@@ -69,10 +74,12 @@ def clientConnect(lsListenPort, ts1Hostname, ts1ListenPort, ts2Hostname, ts2List
 
     print("")
 
-
     # TODO: Send hostnames to TS1 and TS2
     # LS then forwards the query to _both_ TS1 and TS2. However, at most one of TS1 and TS2 contain the IP address for this hostname.
     # Only when a TS server contains a mapping will it respond to LS; otherwise, that TS sends nothing back.
+
+    #if the LS does not receive a response from either TS within a time interval of 5 seconds (OK to wait slightly longer),
+    #the LS must sendthe client the message: Hostname -Error:HOST NOT FOUND where the Hostname is the client-requested host name.
     ts1Socket = tsConnect(ts1Hostname, ts1ListenPort)
     ts1Request = ts1Socket.recv(200).decode('utf-8')
     print("[LS]: Response Received from TS1:: " + ts1Request)
@@ -91,8 +98,7 @@ def clientConnect(lsListenPort, ts1Hostname, ts1ListenPort, ts2Hostname, ts2List
     ts2Request = ts2Socket.recv(200).decode('utf-8')
     print("[LS]: Response Received from TS2:: " + ts2Request)
 
-    #if the LS does not receive a response from either TS within a time interval of 5 seconds (OK to wait slightly longer),
-    #the LS must sendthe client the message: Hostname -Error:HOST NOT FOUND where the Hostname is the client-requested host name.
+
 
 
 

@@ -1,37 +1,28 @@
 import socket as csock
 import argparse
 
-DOMAIN_NAMES = []
-
-def lsConnect(lsPort, lsHostName):
-
-    # Establishing Connection with RS
-    # TODO: Server lookup addr. Check if RServer has the data or TServer does
+def lsConnect(lsHostName, lsPort):
     try:
         cs = csock.socket(csock.AF_INET, csock.SOCK_STREAM)
         print("[C]: LS Client Socket created")
     except csock.error as err:
         print('{} \n'.format("socket open error ",err))
-    
-    # addr = csock.gethostbyname(csock.gethostname())
-    addr = lsHostName
 
-    cs.connect((addr, lsPort))
-
+    cs.connect((lsHostName, lsPort))
     return cs
 
 def sendQuery(lsSocket):
     hns_file = open("PROJ2-HNS.txt")
 
-    print("[C]: Beginning transmission to LS. Sending queries...")
-    allLines = ""
+    print("[C]: Beginning transmission to LS.")
     for line in hns_file:
         line = line.rstrip()
         if line == "":
             continue
-        print(line)
-        allLines += line + " "
-    lsSocket.send(allLines)
+        print("SENDING: " + line)
+        lsSocket.send("{:<200}".format(line))
+    lsSocket.send("DONE")
+    print("DONE")
     hns_file.close()
 
 
@@ -46,14 +37,13 @@ print("[C]: host file name: " + args.lsHostName)
 print("[C]: ls socket: " + str(args.lsListenPort))
 
 print("")
-#connect to LS server
-lsSocket = lsConnect(args.lsListenPort, args.lsHostName)
+
+lsSocket = lsConnect(args.lsHostName, args.lsListenPort)
 sendQuery(lsSocket)
+
+print("")
 
 LSresponse = lsSocket.recv(200).decode('utf-8')
 print("[C]: Response received:: " + LSresponse)
 lsSocket.close()
-
-
-
 exit()
