@@ -34,8 +34,7 @@ def tsConnect(tsHostName,tsPort):
         print("[LS]: TS Client Socket created")
     except socket.error as err:
         print('{} \n'.format("socket open error ",err))
-    tsaddr = tsHostName
-    ts.connect((tsaddr, tsPort))
+    ts.connect((tsHostName, tsPort))
     return ts
 
 def getClientQuery(csockid):
@@ -62,15 +61,9 @@ def clientConnect(lsListenPort, ts1Hostname, ts1ListenPort, ts2Hostname, ts2List
     print("[LS]: Server IP address is  " + localhost_ip)
 
     print("")
+    
     csockid,addr=ssls.accept()
     print ("[LS]: Got a connection request from a client at " + addr[0] + " " + str(addr[1]))
-    request = csockid.recv(200).decode('utf-8')
-    print("[LS]: Response Received from Client:: " + request)
-    print("[LS]: Sending to Client: \"Hello Client, this is LS\"")
-    csockid.send("Hello Client, this is LS")
-
-    print("")
-
     clientRequests = getClientQuery(csockid)
     print("[LS]: Transmission Complete. Looking for " + str(clientRequests) + " in TS1 and TS2...")
 
@@ -82,21 +75,21 @@ def clientConnect(lsListenPort, ts1Hostname, ts1ListenPort, ts2Hostname, ts2List
     # Only when a TS server contains a mapping will it respond to LS; otherwise, that TS sends nothing back.
     ts1Socket = tsConnect(ts1Hostname, ts1ListenPort)
     ts1Request = ts1Socket.recv(200).decode('utf-8')
-    print("[LS]: Response Received from TS1:: " + request)
+    print("[LS]: Response Received from TS1:: " + ts1Request)
     print("[LS]: Sending to TS1: \"Hello TS1, this is LS\"")
     ts1Socket.send("Hello TS1, this is LS")
     ts1Request = ts1Socket.recv(200).decode('utf-8')
-    print("[LS]: Response Received from TS1:: " + request)
+    print("[LS]: Response Received from TS1:: " + ts1Request)
 
     print("")
 
     ts2Socket = tsConnect(ts2Hostname, ts2ListenPort)
     ts2Request = ts2Socket.recv(200).decode('utf-8')
-    print("[LS]: Response Received from TS2:: " + request)
+    print("[LS]: Response Received from TS2:: " + ts2Request)
     print("[LS]: Sending to TS2: \"Hello TS2, this is LS\"")
     ts2Socket.send("Hello TS2, this is LS")
     ts2Request = ts2Socket.recv(200).decode('utf-8')
-    print("[LS]: Response Received from TS2:: " + request)
+    print("[LS]: Response Received from TS2:: " + ts2Request)
 
     #if the LS does not receive a response from either TS within a time interval of 5 seconds (OK to wait slightly longer),
     #the LS must sendthe client the message: Hostname -Error:HOST NOT FOUND where the Hostname is the client-requested host name.

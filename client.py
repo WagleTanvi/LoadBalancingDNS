@@ -27,6 +27,8 @@ def sendQuery(lsSocket):
     allLines = ""
     for line in hns_file:
         line = line.rstrip()
+        if line == "":
+            continue
         print(line)
         allLines += line + " "
     lsSocket.send(allLines)
@@ -46,15 +48,7 @@ print("[C]: ls socket: " + str(args.lsListenPort))
 print("")
 #connect to LS server
 lsSocket = lsConnect(args.lsListenPort, args.lsHostName)
-print("[C]: Sending to LS: \"Hello LS, this is Client\"")
-lsSocket.send("Hello LS, this is Client".encode('utf-8'))
-LSresponse = lsSocket.recv(200).decode('utf-8')
-print("[C]: Response received from LS::  " + LSresponse)
-
-print("")
 sendQuery(lsSocket)
-
-
 
 LSresponse = lsSocket.recv(200).decode('utf-8')
 print("[C]: Response received:: " + LSresponse)
