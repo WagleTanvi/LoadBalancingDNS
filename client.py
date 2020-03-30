@@ -15,17 +15,25 @@ def sendQuery(lsSocket):
     hns_file = open("PROJ2-HNS.txt")
 
     print("[C]: Beginning transmission to LS.")
+    count = 0
     for line in hns_file:
         line = line.rstrip()
         if line == "":
             continue
         print("SENDING: " + line)
         lsSocket.send("{:<200}".format(line))
-    lsSocket.send("DONE")
-    print("DONE")
+        count+=1
     hns_file.close()
+    return count
 
-
+def recieveQuery(lsSocket, count):
+    recvCount = 0
+    while recvCount < count:
+        LSresponse = lsSocket.recv(200).decode('utf-8')
+        if LSresponse != "":
+            recvCount +=1
+            print("[C]: Response received:: " + LSresponse)
+            # write to file here 
 
 # Default arg is set to string type=int overrides
 parser = argparse.ArgumentParser()
@@ -39,11 +47,13 @@ print("[C]: ls socket: " + str(args.lsListenPort))
 print("")
 
 lsSocket = lsConnect(args.lsHostName, args.lsListenPort)
-sendQuery(lsSocket)
+count = sendQuery(lsSocket)
+recieveQuery(lsSocket, count)
+
 
 print("")
 
-LSresponse = lsSocket.recv(200).decode('utf-8')
-print("[C]: Response received:: " + LSresponse)
+lsSocket.send("DONE")
+print("DONE")
 lsSocket.close()
 exit()

@@ -1,43 +1,8 @@
 import socket
 import argparse
 import time
-DNS_TABLE = []
-HEADER_VALUES = ["hostname", "ip", "flag"]
-def set_up_dns_table():
-    f = open("PROJI-DNSRS.txt", "r")
-    for line in f:
-        line = line.strip("\n") # remove extra new lines
-        line_info = line.split(" ") # split line by spaces
+import select 
 
-        # create dictionary of values and add to array 
-        combined_info = zip(HEADER_VALUES, line_info) 
-        DNS_TABLE.append(dict(combined_info))
-
-    f.close()
-
-def find_ip(queried_host):
-    # check if the IP is in the table 
-    for row in DNS_TABLE:
-        if row["hostname"].lower() == queried_host.lower():  # case insensitive
-            return row["hostname"] + " " + row["ip"] + " " + row["flag"]+ "\n"
-    
-    # if not in the table find the NS host name and return 
-    for row in DNS_TABLE:
-        if row["flag"] == "NS":
-            return row["hostname"] +" - "+ row["flag"]+ "\n"
-
-
-def getClientQuery(csockid):
-    print("[LS]: Receiving queries from Client...")
-    addresses = []
-    while(1):
-        hostname = csockid.recv(200).strip()
-        if(hostname == "DONE"):
-            break
-        addresses.append(hostname)
-        print("RECEIVED: " + hostname)
-
-    return addresses
 
 # helper function. returns socket single connection with ts
 def tsConnect(tsHostName,tsPort):
@@ -48,6 +13,31 @@ def tsConnect(tsHostName,tsPort):
         print('{} \n'.format("socket open error ",err))
     ts.connect((tsHostName, tsPort))
     return ts
+
+def sendTS(hostname, ts1Socket, ts2Socket, ts1Hostname, ts2Hostname):
+    ts1Socket.send(hostname)
+    ts2Socket.send(hostname)
+    while 1:
+        try:
+            inputready,outputready,exceptready = select.select([ts1Socket, ts2Socket], [], [],5)
+        except select.error, e:
+            break
+        except socket.error, e:
+            break
+        if not inputready:
+            print("Timed out")
+            return hostname + " - Error:HOST NOT FOUND"
+        for s in inputready:
+            data = s.recv(1024)
+            if data:
+                data = data.strip()
+                if s == ts1Socket:
+                    data+= " "+ts1Hostname
+                    print(data)
+                else: 
+                    data+= " "+ts2Hostname
+                    print(data)
+                return data
 
 # TODO: ts parameters must be added
 def clientConnect(lsListenPort, ts1Hostname, ts1ListenPort, ts2Hostname, ts2ListenPort):
@@ -67,12 +57,15 @@ def clientConnect(lsListenPort, ts1Hostname, ts1ListenPort, ts2Hostname, ts2List
 
     print("")
 
+    ts1Socket = tsConnect(ts1Hostname, ts1ListenPort)
+    ts2Socket = tsConnect(ts2Hostname, ts2ListenPort)
+    ts1Socket.setblocking(1)
+    ts2Socket.setblocking(1)
+
     csockid,addr=ssls.accept()
     print ("[LS]: Got a connection request from a client at " + addr[0] + " " + str(addr[1]))
-    clientRequests = getClientQuery(csockid)
-    print("[LS]: Transmission Complete. Looking for " + str(clientRequests) + " in TS1 and TS2...")
 
-    print("")
+    print("[LS]: Receiving queries from Client...")
 
     # TODO: Send hostnames to TS1 and TS2
     # LS then forwards the query to _both_ TS1 and TS2. However, at most one of TS1 and TS2 contain the IP address for this hostname.
@@ -80,44 +73,24 @@ def clientConnect(lsListenPort, ts1Hostname, ts1ListenPort, ts2Hostname, ts2List
 
     #if the LS does not receive a response from either TS within a time interval of 5 seconds (OK to wait slightly longer),
     #the LS must sendthe client the message: Hostname -Error:HOST NOT FOUND where the Hostname is the client-requested host name.
-    ts1Socket = tsConnect(ts1Hostname, ts1ListenPort)
-    ts1Request = ts1Socket.recv(200).decode('utf-8')
-    print("[LS]: Response Received from TS1:: " + ts1Request)
-    print("[LS]: Sending to TS1: \"Hello TS1, this is LS\"")
-    ts1Socket.send("Hello TS1, this is LS")
-    ts1Request = ts1Socket.recv(200).decode('utf-8')
-    print("[LS]: Response Received from TS1:: " + ts1Request)
+    
+    while(1):
+        hostname = csockid.recv(200).strip()
+        if(hostname == "DONE"):
+            ts1Socket.send(hostname)
+            ts2Socket.send(hostname)
+            break
+        print("[LS]: RECEIVED: " + hostname)
+        response = sendTS(hostname,ts1Socket, ts2Socket, ts1Hostname, ts2Hostname)
+        response =  "{:<200}".format(response)
+        print("[LS]: SENT: " + response)
+        csockid.send(response.encode('utf-8'))
+
 
     print("")
 
-    ts2Socket = tsConnect(ts2Hostname, ts2ListenPort)
-    ts2Request = ts2Socket.recv(200).decode('utf-8')
-    print("[LS]: Response Received from TS2:: " + ts2Request)
-    print("[LS]: Sending to TS2: \"Hello TS2, this is LS\"")
-    ts2Socket.send("Hello TS2, this is LS")
-    ts2Request = ts2Socket.recv(200).decode('utf-8')
-    print("[LS]: Response Received from TS2:: " + ts2Request)
-
-
-
-
-
-
-    # TODO: uncomment after initial setup might not need it in ls. only in ts
-    # while 1:
-    #     request = csockid.recv(200).decode('utf-8')
-    #     print("[LS]: Message received:: " + request)
-    #     if request == "DONE": 
-    #         break
-    #     response = find_ip(request.strip())
-    #     response =  "{:<200}".format(response)
-    #     print("[LS]: Response Sent:: " + response)
-    #     csockid.send(response.encode('utf-8'))
-
-    print("")
-    print("[LS]: Sending to Client: \"Finished transmitting\"")
-    csockid.send("Finished Transmitting".decode('utf-8'))
-
+    ts1Socket.close()
+    ts2Socket.close()
     ssls.close()
     exit()
 
