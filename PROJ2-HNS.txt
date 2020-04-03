@@ -1,4 +1,11 @@
+client
 www.princeton.edu
-rutgers.com
-nothinghere.com
+google.site
+reddit.com
+www.reddit.com
+www.reddit.org
 amazon.org
+facebook.org
+www.facebook.org
+rutgers.com
+amazon.com
