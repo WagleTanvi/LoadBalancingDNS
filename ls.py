@@ -89,11 +89,9 @@ def clientConnect(lsListenPort, ts1Hostname, ts1ListenPort, ts2Hostname, ts2List
 
     print("")
 
-    ts1Socket.send("{:<200}".format("DONE"))
     ts1Socket.close()
-    ts2Socket.send("{:<200}".format("DONE"))
     ts2Socket.close()
-    
+
     ssls.close()
     exit()
 
