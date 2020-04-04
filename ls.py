@@ -31,12 +31,12 @@ def sendTS(hostname, ts1Socket, ts2Socket, ts1Hostname, ts2Hostname):
             data = s.recv(1024)
             if data:
                 data = data.strip()
-                if s == ts1Socket:
-                    data+= " "+ts1Hostname
-                    print(data)
-                else: 
-                    data+= " "+ts2Hostname
-                    print(data)
+                # if s == ts1Socket:
+                #     data+= " "+ts1Hostname
+                #     print(data)
+                # else: 
+                #     data+= " "+ts2Hostname
+                #     print(data)
                 return data
 
 # TODO: ts parameters must be added
