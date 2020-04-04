@@ -1,11 +1,7 @@
-client
 www.princeton.edu
 google.site
 reddit.com
 www.reddit.com
-www.reddit.org
 amazon.org
-facebook.org
-www.facebook.org
 rutgers.com
-amazon.com
+www.facebook.org
