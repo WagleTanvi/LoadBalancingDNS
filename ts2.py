@@ -61,7 +61,6 @@ def lsConnect(port):
             print("[TS2]: Response Sent:: " + response)
             tssockid.send(response.encode('utf-8'))
 
-
     ss.close()
     exit()
 

@@ -15,8 +15,8 @@ def tsConnect(tsHostName,tsPort):
     return ts
 
 def sendTS(hostname, ts1Socket, ts2Socket, ts1Hostname, ts2Hostname):
-    ts1Socket.send(hostname)
-    ts2Socket.send(hostname)
+    ts1Socket.send("{:<200}".format(hostname))
+    ts2Socket.send("{:<200}".format(hostname))
     while 1:
         try:
             inputready,outputready,exceptready = select.select([ts1Socket, ts2Socket], [], [],5)
@@ -77,8 +77,6 @@ def clientConnect(lsListenPort, ts1Hostname, ts1ListenPort, ts2Hostname, ts2List
     while(1):
         hostname = csockid.recv(200).strip()
         if(hostname == "DONE"):
-            ts1Socket.send(hostname)
-            ts2Socket.send(hostname)
             break
         print("[LS]: RECEIVED: " + hostname)
         response = sendTS(hostname,ts1Socket, ts2Socket, ts1Hostname, ts2Hostname)
@@ -86,7 +84,8 @@ def clientConnect(lsListenPort, ts1Hostname, ts1ListenPort, ts2Hostname, ts2List
         print("[LS]: SENT: " + response)
         csockid.send(response.encode('utf-8'))
 
-
+    ts2Socket.send("DONE")
+    ts1Socket.send("DONE")
     print("")
 
     ts1Socket.close()

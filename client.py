@@ -53,7 +53,7 @@ recieveQuery(lsSocket, count)
 
 print("")
 
-lsSocket.send("DONE")
+lsSocket.send("{:<200}".format("DONE"))
 print("DONE")
 lsSocket.close()
 exit()
