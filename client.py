@@ -26,14 +26,18 @@ def sendQuery(lsSocket):
     hns_file.close()
     return count
 
-def recieveQuery(lsSocket, count):
+def receiveQuery(lsSocket, count):
     recvCount = 0
+    resolved = open("RESOLVED.txt", "w")
     while recvCount < count:
         LSresponse = lsSocket.recv(200).decode('utf-8')
         if LSresponse != "":
             recvCount +=1
-            print("[C]: Response received:: " + LSresponse)
+            print("[C]: Response received:: " + LSresponse.strip())
+            resolved.write(LSresponse.strip() + "\n")
             # write to file here 
+
+    resolved.close()
 
 # Default arg is set to string type=int overrides
 parser = argparse.ArgumentParser()
@@ -48,11 +52,12 @@ print("")
 
 lsSocket = lsConnect(args.lsHostName, args.lsListenPort)
 count = sendQuery(lsSocket)
-recieveQuery(lsSocket, count)
-
 
 print("")
 
+
+print("Waiting for responses from LS...")
+receiveQuery(lsSocket, count)
 lsSocket.send("{:<200}".format("DONE"))
 print("DONE")
 lsSocket.close()
