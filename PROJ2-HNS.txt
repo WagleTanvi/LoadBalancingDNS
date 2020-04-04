@@ -1,7 +1,10 @@
-www.princeton.edu
 google.site
 reddit.com
-www.reddit.com
 amazon.org
-rutgers.com
+www.reddit.com
 www.facebook.org
+www.reddit.org
+facebook.org
+rutgers.com
+amazon.com
+www.princeton.edu
